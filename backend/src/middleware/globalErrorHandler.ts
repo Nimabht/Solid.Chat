@@ -14,11 +14,11 @@ export default (
   }
 
   //logging client side errors (4XX)
-  if (!Error.statusCode || Error.statusCode.toString().startsWith("4")) {
-    console.log(
-      `Responded to ${req.method} request to ${req.originalUrl} With IP: ${req.ip} with data: ${Error.message}`,
-    );
-  }
+  // if (!Error.statusCode || Error.statusCode.toString().startsWith("4")) {
+  //   console.log(
+  //     `Responded to ${req.method} request to ${req.originalUrl} With IP: ${req.ip} with data: ${Error.message}`,
+  //   );
+  // }
 
   //handling server side errors (5XX || 4XX)
   res.status(Error.statusCode);

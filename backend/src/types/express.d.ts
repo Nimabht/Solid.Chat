@@ -5,7 +5,7 @@ import { IAvailableTime } from "./../interface/Request";
 declare global {
   namespace Express {
     interface Request {
-      user: IUser;
+      user?: IUser;
     }
   }
 }
