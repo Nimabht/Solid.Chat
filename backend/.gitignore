@@ -1,0 +1,38 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Logs
+logs
+*.log
+logs/
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+
+# Build directories
+dist/
+build/
+public/build/
+
+# TypeScript
+*.tsbuildinfo
+
+# Production files
+/config/.env
+/config/.env.local
+/config/.env.development.local
+/config/.env.test.local
+/config/.env.production.local
+
+# Temporary files
+/tmp
+*.tm
