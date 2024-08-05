@@ -1,4 +1,5 @@
 import express from "express";
+import globalErrorHandler from "./middleware/globalErrorHandler";
 const app = express();
 
 // Middleware to parse JSON requests
@@ -8,5 +9,6 @@ app.use(express.json());
 app.get("/ping", (req, res) => {
   res.send("PONG developer 🚀!");
 });
+app.use(globalErrorHandler);
 
 export default app;
