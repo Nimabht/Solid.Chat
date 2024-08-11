@@ -20,13 +20,21 @@ export const validatePagination = (query: any) => {
 
 export const validateUserUpdate = (body: any) => {
   const schema = Joi.object({
-    username: Joi.string().optional().messages({
-      "string.base": `"username" should be a string`,
-    }),
+    username: Joi.string()
+      .optional()
+      .trim()
+      .lowercase()
+      .min(3)
+      .max(50)
+      .messages({
+        "string.base": `"username" should be a string`,
+        "string.min": `"username" should have a minimum length of {#limit}`,
+        "string.max": `"username" should have a maximum length of {#limit}`,
+      }),
     nickname: Joi.string().optional().messages({
       "string.base": `"nickname" should be a string`,
     }),
-    email: Joi.string().email().optional().messages({
+    email: Joi.string().email().trim().lowercase().optional().messages({
       "string.base": `"email" should be a string`,
       "string.email": `"email" must be a valid email address`,
     }),
@@ -48,14 +56,22 @@ export const validateUserUpdate = (body: any) => {
 
 export const validateUserCreation = (body: any) => {
   const schema = Joi.object({
-    username: Joi.string().required().messages({
-      "string.base": `"username" should be a string`,
-      "any.required": `"username" is required`,
-    }),
+    username: Joi.string()
+      .required()
+      .trim()
+      .lowercase()
+      .min(3)
+      .max(50)
+      .messages({
+        "string.base": `"username" should be a string`,
+        "any.required": `"username" is required`,
+        "string.min": `"username" should have a minimum length of {#limit}`,
+        "string.max": `"username" should have a maximum length of {#limit}`,
+      }),
     nickname: Joi.string().optional().messages({
       "string.base": `"nickname" should be a string`,
     }),
-    email: Joi.string().email().required().messages({
+    email: Joi.string().email().trim().lowercase().required().messages({
       "string.base": `"email" should be a string`,
       "string.email": `"email" must be a valid email address`,
       "any.required": `"email" is required`,

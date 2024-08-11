@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel";
 import AppError from "../utils/class/AppError";
+import { validateUserLogin, validateUserSignup } from "../validators/Auth";
 
 const generateToken = (user: any, secret: string, expiresIn: string) => {
   return jwt.sign({ id: user._id, roles: user.roles }, secret, { expiresIn });
@@ -14,8 +15,26 @@ class AuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const { username, email, password } = req.body;
-      const newUser = new User({ username, email, password });
+      const { error, value } = validateUserSignup(req.body);
+      if (error) {
+        return next(AppError.badRequest(error.toString()));
+      }
+
+      // Check for duplicate username or email
+      const duplicateUser = await User.findOne({
+        $or: [{ username: value.username }, { email: value.email }],
+      });
+
+      if (duplicateUser) {
+        if (duplicateUser.username === value.username) {
+          return next(AppError.badRequest("Username is already taken"));
+        }
+        if (duplicateUser.email === value.email.toLocaleLowerCase()) {
+          return next(AppError.badRequest("Email is already taken"));
+        }
+      }
+
+      const newUser = new User(value);
       await newUser.save();
 
       const token = generateToken(
@@ -40,28 +59,35 @@ class AuthController {
     res: Response,
     next: NextFunction,
   ): Promise<void> {
-    try {
-      const { username, password } = req.body;
-      const user = await User.findOne({ username }).select("+password");
-      if (!user || !(await user.comparePassword(password))) {
-        return next(AppError.badRequest("Invalid username or password"));
-      }
+    const { error, value } = validateUserLogin(req.body);
 
-      const token = generateToken(
-        user,
-        process.env.JWT_SECRET as string,
-        process.env.JWT_EXPIRATION as string | "1h",
-      );
-      const refreshToken = generateToken(
-        user,
-        process.env.JWT_REFRESH_SECRET as string,
-        process.env.JWT_REFRESH_EXPIRATION as string | "7d",
-      );
-
-      res.status(200).json({ token, refreshToken });
-    } catch (error: any) {
-      next(AppError.internal("Error during login"));
+    if (error) {
+      return next(AppError.badRequest(error.toString()));
     }
+
+    const { username, email, password } = value;
+
+    // Find the user by username or email
+    const user = await User.findOne({
+      $or: [{ username }, { email }],
+    }).select("+password");
+
+    if (!user || !(await user.comparePassword(password))) {
+      return next(AppError.badRequest("Invalid username or password"));
+    }
+
+    const token = generateToken(
+      user,
+      process.env.JWT_SECRET as string,
+      process.env.JWT_EXPIRATION as string | "1h",
+    );
+    const refreshToken = generateToken(
+      user,
+      process.env.JWT_REFRESH_SECRET as string,
+      process.env.JWT_REFRESH_EXPIRATION as string | "7d",
+    );
+
+    res.status(200).json({ token, refreshToken });
   }
 
   public async refreshToken(

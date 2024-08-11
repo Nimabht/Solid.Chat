@@ -110,7 +110,6 @@ class UserController {
         return next(AppError.badRequest("Username is already taken"));
       }
       if (duplicateUser.email === value.email.toLocaleLowerCase()) {
-        console.log("va");
         return next(AppError.badRequest("Email is already taken"));
       }
     }
