@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../models/userModel";
-import { validatePagination, validateUserUpdate } from "../validators/User";
+import {
+  validatePagination,
+  validateUserUpdate,
+  validateUserCreation,
+} from "../validators/User";
 import AppError from "../utils/class/AppError";
 
 class UserController {
@@ -69,7 +73,7 @@ class UserController {
       if (duplicateUser.username === value.username) {
         return next(AppError.badRequest("Username is already taken"));
       }
-      if (duplicateUser.email === value.email) {
+      if (duplicateUser.email === value.email.toLocaleLowerCase()) {
         return next(AppError.badRequest("Email is already taken"));
       }
     }
@@ -80,10 +84,41 @@ class UserController {
     }).lean();
 
     if (!updatedUser) {
-      return next(AppError.internal("Somthing went wrong when updating user"));
+      return next(AppError.internal("Something went wrong when updating user"));
     }
 
     res.status(200).json(updatedUser);
+  }
+
+  public async createUser(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    const { error, value } = validateUserCreation(req.body);
+    if (error) {
+      return next(AppError.badRequest(error.toString()));
+    }
+
+    // Check for duplicate username or email
+    const duplicateUser = await User.findOne({
+      $or: [{ username: value.username }, { email: value.email }],
+    });
+
+    if (duplicateUser) {
+      if (duplicateUser.username === value.username) {
+        return next(AppError.badRequest("Username is already taken"));
+      }
+      if (duplicateUser.email === value.email.toLocaleLowerCase()) {
+        console.log("va");
+        return next(AppError.badRequest("Email is already taken"));
+      }
+    }
+
+    const newUser = new User(value);
+    await newUser.save();
+
+    res.status(201).json(newUser);
   }
 }
 

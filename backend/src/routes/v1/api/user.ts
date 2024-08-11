@@ -30,6 +30,11 @@ router.put(
   asyncMiddleware(userController.updateUser),
 );
 
+router.post(
+  "/",
+  //   [jwtValidator, hasAccessByAdminOrOwner],
+  asyncMiddleware(userController.createUser),
+);
 // router.get(
 //   "/avatar/:userId",
 //   [jwtValidator, hasAccessByAdminOrOwner],
